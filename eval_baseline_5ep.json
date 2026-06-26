@@ -1,0 +1,241 @@
+{
+  "overall": {
+    "recall": 0.676944971537002,
+    "false_alarm_rate": 0.4097207859358842,
+    "precision": 0.5902792140641159,
+    "tp": 2854,
+    "fp": 1981,
+    "fn": 1362,
+    "meets_recall": false,
+    "meets_false_alarm": false,
+    "avg_inference_time": 0.018376347808505816,
+    "num_images": 919
+  },
+  "per_class": {
+    "HM": {
+      "tp": 7,
+      "fp": 4,
+      "fn": 0,
+      "gt_count": 7,
+      "pred_count": 11,
+      "recall": 1.0,
+      "precision": 0.6363636363636364
+    },
+    "LQS": {
+      "tp": 0,
+      "fp": 23,
+      "fn": 6,
+      "gt_count": 6,
+      "pred_count": 23,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    "QHS": {
+      "tp": 65,
+      "fp": 92,
+      "fn": 78,
+      "gt_count": 143,
+      "pred_count": 157,
+      "recall": 0.45454545454545453,
+      "precision": 0.4140127388535032
+    },
+    "MS": {
+      "tp": 292,
+      "fp": 153,
+      "fn": 140,
+      "gt_count": 432,
+      "pred_count": 445,
+      "recall": 0.6759259259259259,
+      "precision": 0.6561797752808989
+    },
+    "A1_SU-35": {
+      "tp": 182,
+      "fp": 125,
+      "fn": 56,
+      "gt_count": 238,
+      "pred_count": 307,
+      "recall": 0.7647058823529411,
+      "precision": 0.5928338762214984
+    },
+    "A2_C-130": {
+      "tp": 161,
+      "fp": 134,
+      "fn": 32,
+      "gt_count": 193,
+      "pred_count": 295,
+      "recall": 0.8341968911917098,
+      "precision": 0.5457627118644067
+    },
+    "A3_C-17": {
+      "tp": 103,
+      "fp": 45,
+      "fn": 119,
+      "gt_count": 222,
+      "pred_count": 148,
+      "recall": 0.46396396396396394,
+      "precision": 0.6959459459459459
+    },
+    "A4_C-5": {
+      "tp": 70,
+      "fp": 257,
+      "fn": 2,
+      "gt_count": 72,
+      "pred_count": 327,
+      "recall": 0.9722222222222222,
+      "precision": 0.21406727828746178
+    },
+    "A5_F-16": {
+      "tp": 135,
+      "fp": 60,
+      "fn": 58,
+      "gt_count": 193,
+      "pred_count": 195,
+      "recall": 0.6994818652849741,
+      "precision": 0.6923076923076923
+    },
+    "A6_TU-160": {
+      "tp": 56,
+      "fp": 30,
+      "fn": 14,
+      "gt_count": 70,
+      "pred_count": 86,
+      "recall": 0.8,
+      "precision": 0.6511627906976745
+    },
+    "A7_E-3": {
+      "tp": 10,
+      "fp": 26,
+      "fn": 76,
+      "gt_count": 86,
+      "pred_count": 36,
+      "recall": 0.11627906976744186,
+      "precision": 0.2777777777777778
+    },
+    "A8_B-52": {
+      "tp": 47,
+      "fp": 24,
+      "fn": 108,
+      "gt_count": 155,
+      "pred_count": 71,
+      "recall": 0.3032258064516129,
+      "precision": 0.6619718309859155
+    },
+    "A9_P-3C": {
+      "tp": 120,
+      "fp": 18,
+      "fn": 92,
+      "gt_count": 212,
+      "pred_count": 138,
+      "recall": 0.5660377358490566,
+      "precision": 0.8695652173913043
+    },
+    "A10_B-1B": {
+      "tp": 122,
+      "fp": 6,
+      "fn": 59,
+      "gt_count": 181,
+      "pred_count": 128,
+      "recall": 0.6740331491712708,
+      "precision": 0.953125
+    },
+    "A11_E-8": {
+      "tp": 43,
+      "fp": 131,
+      "fn": 16,
+      "gt_count": 59,
+      "pred_count": 174,
+      "recall": 0.7288135593220338,
+      "precision": 0.2471264367816092
+    },
+    "A12_TU-22": {
+      "tp": 69,
+      "fp": 15,
+      "fn": 60,
+      "gt_count": 129,
+      "pred_count": 84,
+      "recall": 0.5348837209302325,
+      "precision": 0.8214285714285714
+    },
+    "A13_F-15": {
+      "tp": 180,
+      "fp": 120,
+      "fn": 70,
+      "gt_count": 250,
+      "pred_count": 300,
+      "recall": 0.72,
+      "precision": 0.6
+    },
+    "A14_KC-135": {
+      "tp": 235,
+      "fp": 210,
+      "fn": 25,
+      "gt_count": 260,
+      "pred_count": 445,
+      "recall": 0.9038461538461539,
+      "precision": 0.5280898876404494
+    },
+    "A15_F-22": {
+      "tp": 29,
+      "fp": 39,
+      "fn": 91,
+      "gt_count": 120,
+      "pred_count": 68,
+      "recall": 0.24166666666666667,
+      "precision": 0.4264705882352941
+    },
+    "A16_FA-18": {
+      "tp": 365,
+      "fp": 64,
+      "fn": 85,
+      "gt_count": 450,
+      "pred_count": 429,
+      "recall": 0.8111111111111111,
+      "precision": 0.8508158508158508
+    },
+    "A17_TU-95": {
+      "tp": 198,
+      "fp": 77,
+      "fn": 23,
+      "gt_count": 221,
+      "pred_count": 275,
+      "recall": 0.8959276018099548,
+      "precision": 0.72
+    },
+    "A18_KC-10": {
+      "tp": 26,
+      "fp": 50,
+      "fn": 11,
+      "gt_count": 37,
+      "pred_count": 76,
+      "recall": 0.7027027027027027,
+      "precision": 0.34210526315789475
+    },
+    "A19_SU-34": {
+      "tp": 154,
+      "fp": 89,
+      "fn": 56,
+      "gt_count": 210,
+      "pred_count": 243,
+      "recall": 0.7333333333333333,
+      "precision": 0.6337448559670782
+    },
+    "A20_SU-24": {
+      "tp": 124,
+      "fp": 86,
+      "fn": 45,
+      "gt_count": 169,
+      "pred_count": 210,
+      "recall": 0.7337278106508875,
+      "precision": 0.5904761904761905
+    },
+    "FSC": {
+      "tp": 61,
+      "fp": 103,
+      "fn": 40,
+      "gt_count": 101,
+      "pred_count": 164,
+      "recall": 0.6039603960396039,
+      "precision": 0.3719512195121951
+    }
+  }
+}

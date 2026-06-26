@@ -1,0 +1,125 @@
+# XH-202625 Competition Configuration
+# Dataset
+dataset:
+  root: "C:/Users/lenovo/Desktop/数据集/data"
+  num_classes: 25
+  img_size: 800
+  # Class names
+  names:
+    0: HM
+    1: LQS
+    2: QHS
+    3: MS
+    4: A1_SU-35
+    5: A2_C-130
+    6: A3_C-17
+    7: A4_C-5
+    8: A5_F-16
+    9: A6_TU-160
+    10: A7_E-3
+    11: A8_B-52
+    12: A9_P-3C
+    13: A10_B-1B
+    14: A11_E-8
+    15: A12_TU-22
+    16: A13_F-15
+    17: A14_KC-135
+    18: A15_F-22
+    19: A16_FA-18
+    20: A17_TU-95
+    21: A18_KC-10
+    22: A19_SU-34
+    23: A20_SU-24
+    24: FSC
+  # Class groups for BAGS (Balanced Group Softmax)
+  # Group by sample count: head (>1000), medium (200-1000), tail (<200)
+  groups:
+    head: [19, 3, 17, 4, 5, 16, 20, 8]       # >1000 boxes
+    medium: [6, 22, 12, 13, 23, 11, 2, 15, 10, 7, 18, 14]  # 200-1000
+    tail: [24, 9, 21, 1, 0]                    # <200 boxes (FSC, TU-160, KC-10, LQS, HM)
+
+# Training
+train:
+  # Stage 1: Normal training with all data
+  stage1:
+    model: "yolo11l.pt"       # YOLOv11-Large pretrained
+    epochs: 150
+    imgsz: 800
+    batch: 16
+    optimizer: "AdamW"
+    lr0: 0.001
+    lrf: 0.01
+    momentum: 0.937
+    weight_decay: 0.0005
+    warmup_epochs: 5
+    warmup_momentum: 0.8
+    box: 7.5
+    cls: 0.5
+    dfl: 1.5
+    # Augmentation
+    hsv_h: 0.015
+    hsv_s: 0.7
+    hsv_v: 0.4
+    degrees: 15.0
+    translate: 0.1
+    scale: 0.5
+    fliplr: 0.5
+    mosaic: 1.0
+    mixup: 0.15
+    copy_paste: 0.3          # Key: Copy-Paste for tail classes
+    close_mosaic: 10         # Close mosaic last 10 epochs
+  
+  # Stage 2: Class-balanced fine-tuning (freeze backbone, train classifier)
+  stage2:
+    epochs: 50
+    imgsz: 800
+    batch: 32
+    optimizer: "SGD"
+    lr0: 0.005
+    lrf: 0.1
+    freeze_layers: 10        # Freeze backbone + neck, train head only
+    # Class-balanced sampling
+    balanced_sampling: true
+    # Focal loss
+    focal_loss:
+      enabled: true
+      alpha: 0.25
+      gamma: 2.0
+    # Class weights (inverse frequency)
+    use_class_weights: true
+  
+  # Stage 3: Tail-class special fine-tuning (TFA style)
+  stage3:
+    epochs: 30
+    imgsz: 800
+    batch: 16
+    lr0: 0.001
+    freeze_layers: 20        # Freeze all but last layer
+    tail_classes: [24, 9, 21, 1, 0]  # Only fine-tune on tail classes
+    oversample_tail: true
+    tail_oversample_factor: 5
+
+# Inference
+inference:
+  # SAHI slicing for 10000x10000 images
+  sahi:
+    slice_height: 640
+    slice_width: 640
+    overlap_height_ratio: 0.2
+    overlap_width_ratio: 0.2
+    postprocess_type: "NMS"
+    postprocess_match_threshold: 0.5
+  # Confidence threshold
+  conf_thres: 0.25
+  iou_thres: 0.45
+  # Max inference time (seconds) for 10000x10000 image
+  max_inference_time: 20
+  # Use TensorRT
+  use_tensorrt: false
+
+# Evaluation
+eval:
+  # Competition metrics
+  min_recall: 0.85
+  max_false_alarm: 0.20
+  max_inference_time: 20

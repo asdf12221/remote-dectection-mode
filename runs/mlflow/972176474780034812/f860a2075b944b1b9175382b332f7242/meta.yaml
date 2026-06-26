@@ -1,0 +1,14 @@
+artifact_uri: file:C:/Users/lenovo/Desktop/XH-202625/runs/mlflow/972176474780034812/f860a2075b944b1b9175382b332f7242/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '972176474780034812'
+lifecycle_stage: active
+run_id: f860a2075b944b1b9175382b332f7242
+run_name: stage1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1782456895292
+status: 1
+tags: []
+user_id: lenovo
