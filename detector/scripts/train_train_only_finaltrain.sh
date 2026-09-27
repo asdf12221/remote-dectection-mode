@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Stage 2 benchmark training: train-only split, evaluated on the untouched val split.
+# Stage 2 benchmark training: train-only split. Validation is held out from
+# gradient updates and used for periodic evaluation / best-checkpoint selection.
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PYTHONPATH="$ROOT:${PYTHONPATH:-}"
 CONFIG="$ROOT/configs/cascade_merged_25cls_v3_ce_v5_bifpn_v5_fp16_finaltrain_abl_a0_config.py"

@@ -24,20 +24,30 @@ The reported cRT operating point is therefore:
 | --- | ---: | --- |
 | Confidence threshold | 0.70 | detections below this score are discarded |
 | Matching IoU | 0.50 | same class, greedy one-to-one matching |
-| Precision | 95.06% | complement of recorded FAR |
+| Precision | **94.91%** | complement of recorded FAR |
 | Recall | 95.06% | complement of recorded MR |
+| F1 score | **94.98%** | harmonic mean of precision and recall |
 | Miss rate (MR) | **4.94%** | FN / (TP + FN) |
 | False-alarm rate (FAR) | **5.09%** | FP / (TP + FP) |
 
-These values are aggregate validation-set rates, not per-class averages. For
-class-wise analysis, export the matched TP/FP/FN counts from
+These values are aggregate validation-set rates, not per-class averages. FAR is
+reported as a detection-level rate; it is not false positives per image (FPPI).
+For class-wise analysis, export the matched TP/FP/FN counts from
 `detector/scripts/evaluate.py` and report the same formulas per category.
+
+The operating-point F1 score is computed as:
+
+```text
+F1 = 2 * precision * recall / (precision + recall) = 0.949849 ≈ 94.98%
+```
 
 ## Split and provenance
 
 - Training: A0 train-only split (`annotations_train_abl.json`).
-- Validation: untouched `finaldatav5/annotations_val.json` (1,343 images,
-  7,022 ground-truth boxes).
+- Validation: `finaldatav5/annotations_val.json` (1,343 images, 7,022
+  ground-truth boxes), held out from gradient updates. The validation loop is
+  also used for `save_best` checkpoint selection, so this is a validation-set
+  model-selection report rather than an unbiased test estimate.
 - Architecture: InternImage-L + BiFPN + Cascade R-CNN, 25 classes.
 - cRT: only the three classifier layers are retrained; backbone, neck, RPN and
   regression branches remain frozen.

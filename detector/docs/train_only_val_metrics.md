@@ -6,8 +6,10 @@ This is the metric provenance used on the repository homepage.
 
 - **Training:** A0 train-only split (`annotations_train_abl.json`), 3,138
   source images, with the recorded FSC repeat-factor sampling.
-- **Validation:** untouched `finaldatav5/annotations_val.json`, 1,343 images
-  and 7,022 ground-truth boxes.
+- **Validation:** held out from gradient updates, `finaldatav5/annotations_val.json`,
+  1,343 images and 7,022 ground-truth boxes. The standard MMDetection
+  validation loop runs every epoch and `CheckpointHook(save_best='coco/bbox_mAP')`
+  selects the reported checkpoint, so this split is not an untouched test set.
 - **Architecture:** InternImage-L backbone, custom BiFPN neck, Cascade R-CNN,
   25 classes.
 - **cRT:** only the three Cascade R-CNN `fc_cls` layers are trainable; the

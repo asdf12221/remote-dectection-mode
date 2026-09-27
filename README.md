@@ -5,13 +5,28 @@ the custom InternImage backbone, BiFPN neck, Cascade R-CNN configuration, cRT
 (classifier re-training) implementation, DCNv3 build sources, training scripts,
 evaluation code, and large-image inference utilities.
 
+## Abstract
+
+We provide a reproducible remote-sensing object-detection pipeline for a
+25-category long-tailed benchmark. The system uses InternImage-L with DCNv3 as
+the backbone, a BiFPN neck for cross-scale feature aggregation, and a
+three-stage Cascade R-CNN head for progressively stricter localization. A
+decoupled classifier re-training (cRT) stage then updates only the classifier
+layers to mitigate class-imbalance effects while preserving the learned
+localization features. The repository separates a train-only → validation
+benchmark chain from a trainval checkpoint lineage that is retained for
+traceability only. In the benchmark chain, validation images are excluded from
+gradient updates but are used by the standard validation loop and `save_best`
+checkpoint selection.
+
 ## At a glance
 
 The final detector combines an InternImage-L backbone, a BiFPN multi-scale
 feature pyramid, a three-stage Cascade R-CNN head, and classifier re-training
 (cRT) for long-tail remote-sensing categories. The public benchmark below is
-strictly **train-only → untouched validation**; no validation image is used for
-training or model selection.
+strictly **train-only → held-out validation**: validation images are never used
+for gradient updates, but are used for periodic evaluation and best-checkpoint
+selection.
 
 ![Model architecture](assets/architecture.png)
 
@@ -32,6 +47,19 @@ validation evaluation / large-image inference
 The detector has 25 classes: four ship classes, twenty aircraft classes, and
 FSC (launch vehicle).
 
+### Method contributions
+
+- **Multi-scale representation:** InternImage-L and BiFPN combine deformable
+  convolutional context with bidirectional feature fusion for small and large
+  objects.
+- **Progressive localization:** Cascade R-CNN uses IoU thresholds 0.50, 0.60
+  and 0.70 across its three cascade heads.
+- **Long-tail adaptation:** cRT freezes the backbone, neck, RPN and regression
+  branches and re-trains only the three classifier layers with repeat-factor
+  sampling.
+- **Large-scene deployment:** tiled inference maps local predictions back to
+  global coordinates and applies same-class global NMS.
+
 This repository is intentionally source-only: generated training outputs,
 legacy YOLO/SAHI experiments, and large checkpoints are excluded so the public
 project focuses on the final detector pipeline.
@@ -39,24 +67,46 @@ project focuses on the final detector pipeline.
 ## Reported train → val benchmark
 
 The public benchmark uses the **train-only A0 split** and evaluates on the
-untouched `finaldatav5` validation split. No trainval images are used for these
-numbers.
+`finaldatav5` validation split. No trainval images are used for these numbers;
+the validation split is held out from gradient updates but is used for periodic
+evaluation and checkpoint selection.
 
 | Model / operating point | Training data | Evaluation data | Precision | Recall | Miss rate | False-alarm rate | mAP | AP50 | AP75 |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Cascade R-CNN + InternImage-L + BiFPN | train-only, 36 epochs | finaldatav5 val | — | — | — | — | 0.759 | 0.946 | 0.908 |
 | + cRT (COCO AP) | train-only, 10 classifier epochs | finaldatav5 val | — | — | — | — | **0.758** | **0.944** | **0.909** |
-| + cRT (score 0.70, IoU 0.50) | same cRT checkpoint | finaldatav5 val | **95.06%** | **95.06%** | **4.94%** | **5.09%** | — | — | — |
+| + cRT (score 0.70, IoU 0.50) | same cRT checkpoint | finaldatav5 val | **94.91%** | **95.06%** | **4.94%** | **5.09%** | — | — | — |
 
 For the cRT model, the same validation run reported APs 0.268, APm 0.747 and
 APl 0.788. At score threshold 0.70 and IoU 0.50, the recorded overall miss
-rate / false-alarm rate were 4.94% / 5.09%; precision and recall in the table
-are their complements under the definitions in
+rate / false-alarm rate were 4.94% / 5.09%; the corresponding precision,
+recall and F1 are 94.91%, 95.06% and 94.98%. Precision and recall in the table
+are complements of FAR and MR under the definitions in
 [`detector/docs/metrics.md`](detector/docs/metrics.md).
 
 These are detector metrics, not image-generation metrics. The evaluation split,
 IoU definition, class list and post-processing are documented in
 [`detector/docs/train_only_val_metrics.md`](detector/docs/train_only_val_metrics.md).
+
+The operating-point FAR reported here is a **detection-level false-alarm rate**
+(`FP / (TP + FP)`), not false positives per image (FPPI). Results are aggregate
+values for one predefined validation split; no confidence intervals,
+cross-dataset transfer claims, or test-set generalization claims are made.
+
+## Limitations and responsible interpretation
+
+- The reported benchmark is a single fixed train/validation split and does not
+  quantify uncertainty across alternative splits or sensors.
+- Because `CheckpointHook(save_best='coco/bbox_mAP')` uses validation AP for
+  checkpoint selection, these numbers should be treated as a validation-set
+  model-selection report rather than a final unbiased test estimate.
+- The validation set is drawn from the same benchmark family as the training
+  data; performance on different geographic regions, seasons, resolutions or
+  sensors may differ.
+- The trainval checkpoint score (mAP 0.863) is not an independent estimate of
+  generalization because validation images were included during training.
+- The supplied weights and datasets are not redistributed here; users must
+  verify their licenses and provenance before deployment.
 
 ## Final trainval checkpoint lineage
 
@@ -83,6 +133,8 @@ Metric definitions and the operating-point calculation are in
 [`detector/docs/metrics.md`](detector/docs/metrics.md). Large checkpoints and
 datasets are intentionally excluded from Git history; place them in paths
 described by [`detector/weights/README.md`](detector/weights/README.md).
+The full environment and run-order checklist is in
+[`detector/docs/reproducibility.md`](detector/docs/reproducibility.md).
 
 ## Installation
 
@@ -165,10 +217,29 @@ detector/ops_dcnv3/     source for the custom CUDA operator
 detector/docs/          metric provenance and reproducibility notes
 detector/weights/       checkpoint download and placement instructions
 assets/                 public architecture and training-strategy figures
+CITATION.cff            citation metadata for this repository
 ```
+
+## References
+
+The implementation is built on the following methods and software projects:
+
+- InternImage / DCNv3 — Wang et al., *InternImage: Exploring Large-Scale
+  Vision Foundation Models with Deformable Convolutions*, CVPR 2023.
+- BiFPN — Tan et al., *EfficientDet: Scalable and Efficient Object Detection*,
+  CVPR 2020.
+- Cascade R-CNN — Cai and Vasconcelos, *Cascade R-CNN: Delving into High
+  Quality Object Detection*, CVPR 2018.
+- cRT — Kang et al., *Decoupling Representation and Classifier for Long-Tailed
+  Recognition*, ICLR 2020.
+
+See [`detector/docs/references.md`](detector/docs/references.md) for links and
+software-version details.
 
 ## License and attribution
 
 The repository contains adapted InternImage and DCNv3 components. Preserve the
 upstream licenses and attribution notices when redistributing. Third-party
-datasets and pretrained weights remain subject to their own licenses.
+datasets and pretrained weights remain subject to their own licenses. No single
+umbrella license is asserted for all repository contents; review the upstream
+notices and dataset/checkpoint terms before redistribution.

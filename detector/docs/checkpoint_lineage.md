@@ -22,7 +22,7 @@ those values are retained as lineage metadata only.
 
 ## Public benchmark lineage
 
-The independent train → val numbers in the root README come from a separate
+The train-only → validation numbers in the root README come from a separate
 train-only A0 chain:
 
 ```text
@@ -32,4 +32,6 @@ synth_pretrain_epoch12.pth
   → finaldatav5 val evaluation
 ```
 
-This is the chain used for the reported mAP 0.758 / AP50 0.944 / AP75 0.909.
+This is the chain used for the reported validation-set mAP 0.758 / AP50 0.944 /
+AP75 0.909. It is independent of the trainval leakage lineage, but it is not a
+test-set estimate because validation AP is used for checkpoint selection.

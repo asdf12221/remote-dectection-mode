@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: "Remote Sensing Detection with InternImage, BiFPN, Cascade R-CNN and cRT"
+abstract: "A source-only remote-sensing detection pipeline combining InternImage-L, BiFPN, Cascade R-CNN and classifier re-training, with explicit validation-set metric provenance."
+message: "If this repository contributes to your research, please cite it using this metadata."
+type: software
+repository-code: "https://github.com/asdf12221/remote-dectection-mode"
+version: "1.0.0"
+date-released: "2026-09-27"
+license: "NOASSERTION"
+keywords:
+  - remote sensing
+  - object detection
+  - InternImage
+  - BiFPN
+  - Cascade R-CNN
+  - long-tailed recognition
+  - classifier re-training
+authors:
+  - name: "FPBA-Syn contributors"
