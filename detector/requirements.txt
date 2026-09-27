@@ -1,0 +1,9 @@
+torch==2.5.1
+torchvision==0.20.1
+mmcv==2.1.0
+mmengine==0.10.7
+mmdet==3.3.0
+timm
+pycocotools
+opencv-python
+numpy

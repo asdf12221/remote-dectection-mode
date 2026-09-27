@@ -1,180 +1,149 @@
-# XH-202625 光学遥感卫星陆上目标检测识别竞赛方案
+# Remote Sensing Detection: InternImage + BiFPN + Cascade R-CNN + cRT
 
-## 概述
+This repository contains the detector side of the FPBA-Syn project. It packages
+the custom InternImage backbone, BiFPN neck, Cascade R-CNN configuration, cRT
+(classifier re-training) implementation, DCNv3 build sources, training scripts,
+evaluation code, and large-image inference utilities.
 
-本项目针对"挑战杯"揭榜挂帅竞赛题目XH-202625，解决光学遥感卫星图像中的不均衡小样本目标检测问题。
+## Model pipeline
 
-### 核心挑战
-
-1. **长尾分布极端**: 航母(17框) vs FA-18(2147框)，比例126:1
-2. **小样本类别**: HM(17), LQS(30), KC-10(262), TU-160(361), FSC(402)
-3. **大尺幅推理**: 10,000×10,000像素图像，要求≤20秒
-4. **严格指标**: 召回率≥85%，虚警率≤20%
-
-### 技术方案
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                 三阶段训练策略                            │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  Stage 1: 标准训练 + 强数据增强 (150 epochs)              │
-│    - YOLOv11-Large预训练模型                             │
-│    - Mosaic, MixUp, Copy-Paste                          │
-│    - 学习特征表示，不引入类别偏见                          │
-│                                                         │
-│  Stage 2: 类别平衡微调 (50 epochs)                       │
-│    - 冻结backbone，仅训练检测头                          │
-│    - 平衡采样策略                                        │
-│    - Focal Loss + 类别权重                               │
-│                                                         │
-│  Stage 3: 尾类专项微调TFA (30 epochs)                    │
-│    - 仅训练最后一个分类层                                │
-│    - 仅使用尾类图像                                      │
-│    - 5倍过采样                                          │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+```text
+synthetic pretraining
+        ↓
+train-only fine-tuning (InternImage-L + BiFPN + Cascade R-CNN)
+        ↓
+cRT classifier re-training (only fc_cls is unfrozen)
+        ↓
+validation evaluation / large-image inference
 ```
 
-## 项目结构
+The detector has 25 classes: four ship classes, twenty aircraft classes, and
+FSC (launch vehicle).
 
+This repository also keeps the earlier YOLO/SAHI competition baseline under
+`src/`, `scripts/`, `configs/` and `runs/`. The `detector/` subtree is the
+separate MMDetection implementation of the final InternImage + BiFPN + Cascade
+R-CNN + cRT experiment.
+
+## Reported train → val benchmark
+
+The public benchmark uses the **train-only A0 split** and evaluates on the
+untouched `finaldatav5` validation split. No trainval images are used for these
+numbers.
+
+| Model | Training data | Evaluation data | mAP | AP50 | AP75 |
+| --- | --- | --- | ---: | ---: | ---: |
+| Cascade R-CNN + InternImage-L + BiFPN | train-only, 36 epochs | finaldatav5 val | 0.759 | 0.946 | 0.908 |
+| + cRT | train-only, 10 classifier epochs | finaldatav5 val | **0.758** | **0.944** | **0.909** |
+
+For the cRT model, the same validation run reported APs 0.268, APm 0.747 and
+APl 0.788. At score threshold 0.70, the recorded overall miss rate / false
+alarm rate were 4.94% / 5.09%.
+
+These are detector metrics, not image-generation metrics. The evaluation split,
+IoU definition, class list and post-processing are documented in
+[`detector/docs/train_only_val_metrics.md`](detector/docs/train_only_val_metrics.md).
+
+## Final trainval checkpoint lineage
+
+The supplied final checkpoint name, `bifpn_trainval_fp16_finaltrain_crt.pth`,
+belongs to the **reference-only trainval → cRT lineage**. Its original artifact
+was saved as `best_coco_bbox_mAP_epoch_1.pth` in the trainval cRT work directory
+and reached mAP 0.863 on the recorded validation loader. Because trainval
+includes the validation images, that score is not used as the public benchmark
+above. The matching configs and scripts are retained under:
+
+```text
+detector/configs/*trainval_fp16_finaltrain*
+detector/scripts/train_trainval_fp16_finaltrain*.sh
 ```
-XH-202625/
-├── configs/
-│   └── competition_config.yaml     # 竞赛配置
-├── src/
-│   ├── data/
-│   │   ├── analyze_dataset.py      # 数据集分析
-│   │   ├── split_dataset.py        # 数据集划分
-│   │   └── oversample_tail.py      # 尾类过采样
-│   ├── models/
-│   │   └── (使用ultralytics API)
-│   ├── utils/
-│   │   ├── class_balanced_sampler.py   # 类别平衡采样
-│   │   └── augmentation.py              # 数据增强
-│   ├── inference/
-│   │   └── sahi_inference.py       # SAHI切片推理
-│   └── train.py                    # 训练主脚本
-├── scripts/
-│   └── train_v1.sh                 # 训练脚本
-├── requirements.txt
-└── README.md
-```
 
-## 快速开始
+The complete checkpoint graph is in
+[`detector/docs/checkpoint_lineage.md`](detector/docs/checkpoint_lineage.md).
 
-### 1. 环境准备
+## Installation
+
+The detector was developed with Python 3.10, PyTorch 2.5, CUDA 12.4,
+MMCV 2.1, MMEngine 0.10.7 and MMDetection 3.3.0. Install versions compatible
+with your CUDA build, then build the custom DCNv3 operator:
 
 ```bash
-pip install -r requirements.txt
+pip install torch torchvision mmcv==2.1.0 mmengine==0.10.7 mmdet==3.3.0 timm pycocotools
+cd detector/ops_dcnv3
+python setup.py build_ext --inplace
+cd ../..
 ```
 
-### 2. 数据准备
+Set the project and data paths before using the configs:
 
 ```bash
-# 分析数据集分布
-python src/data/analyze_dataset.py
-
-# 划分训练集/验证集 (按源图像ID分组，防止泄露)
-python src/data/split_dataset.py
-
-# 创建尾类过采样数据集 (可选)
-python src/data/oversample_tail.py
+export FPBA_DATA_ROOT=/data/finaldatav5
+export FPBA_TRAIN_ONLY_ROOT=/data/train_only
+export FPBA_TRAIN_ONLY_ANN=annotations_train_abl.json
+export FPBA_INTERNIMAGE_CKPT=/models/internimage_l_22k_192to384.pth
+export FPBA_SYNTH_CKPT=/models/synth_pretrain_epoch12.pth
+export FPBA_WORK_ROOT=$PWD/detector/work_dirs
 ```
 
-### 3. 训练
+Model weights and datasets are intentionally not included. See
+[`detector/weights/README.md`](detector/weights/README.md).
+
+## Training
+
+From the repository root:
 
 ```bash
-# 完整三阶段训练
-python src/train.py --stage all
-
-# 单独运行某个阶段
-python src/train.py --stage 1
-python src/train.py --stage 2 --weights runs/stage1/weights/best.pt
-python src/train.py --stage 3 --weights runs/stage2/weights/best.pt
+bash detector/scripts/train_1_synth_pretrain.sh
+bash detector/scripts/train_train_only_finaltrain.sh
+bash detector/scripts/train_train_only_crt.sh
 ```
 
-### 4. 推理
+Override checkpoints when needed:
 
 ```bash
-# SAHI切片推理 (适用于大尺幅图像)
-python src/inference/sahi_inference.py \
-    --model runs/stage3/weights/best.pt \
-    --images /path/to/test/images \
-    --output predictions.json \
-    --conf 0.25 \
-    --iou 0.45 \
-    --slice-size 640 \
-    --overlap 0.2
+S1_CKPT=/models/synth_pretrain_epoch12.pth \
+  bash detector/scripts/train_train_only_finaltrain.sh
+
+FT_CKPT=/models/a0_best_epoch35.pth \
+  bash detector/scripts/train_train_only_crt.sh
 ```
 
-## 核心技术
+## Evaluation and inference
 
-### 1. 解耦训练 (Decoupling)
-
-遵循CVPR 2020的原则：
-- Stage 1: **Instance-Balanced Sampling** - 学习无偏见的特征
-- Stage 2-3: **Class-Balanced Sampling** - 修复分类器
-
-### 2. 类别平衡采样策略
-
-```python
-# 平方根逆频率采样 (比直接逆频率更稳定)
-weight_i = 1 / sqrt(freq_i)
-
-# 类别平衡重复采样
-repeat_factor_i = median_freq / freq_i
-```
-
-### 3. 动态特征幻觉 (Feature Hallucination)
-
-对极端少样本类(航母17框、两栖舰30框)：
-- 提取现有样本的特征向量
-- 学习特征的均值和方差分布
-- 合成新特征向量用于训练
-
-### 4. SAHI切片推理
-
-处理10,000×10,000大图：
-- 切片尺寸: 640×640
-- 重叠率: 20%
-- 后处理: 跨切片NMS
-- 预估时间: ~15秒/图 (RTX3090)
-
-## 类别分布
-
-```
-Head (>1000):  FA-18(2147), MS(1994), KC-135(1424), SU-35(1317), C-130(1297)
-               F-15(1265), TU-95(1114), F-16(1017), C-17(998)
-
-Medium (200-1000):  SU-34(933), P-3C(895), B-1B(762), SU-24(752), B-52(750)
-                    QHS(641), TU-22(583), E-3(547), C-5(500), F-22(493)
-                    E-8(432)
-
-Tail (<200):  FSC(402), TU-160(361), KC-10(262), LQS(30), HM(17)
-```
-
-## 评估指标
-
-竞赛要求：
-- **召回率 ≥ 85%**: TP / (TP + FN) ≥ 0.85
-- **虚警率 ≤ 20%**: FP / (TP + FP) ≤ 0.20
-- **推理时间 ≤ 20秒**: 单张10,000×10,000图像
-
-评估脚本:
 ```bash
-python src/evaluate.py --predictions results.json --ground-truth val.json
+python detector/scripts/evaluate.py \
+  --config detector/configs/cascade_merged_25cls_v3_ce_v5_bifpn_v5_fp16_finaltrain_abl_a0_crt_config.py \
+  --ckpt /models/a0_crt_best.pth \
+  --val-json /data/finaldatav5/annotations_val.json \
+  --image-root /data/finaldatav5/images/all \
+  --output detector/eval_results.json
 ```
 
-## 参考文献
+Single-image inference:
 
-1. Kang et al., "Few-Shot Object Detection via Feature Reweighting", ICCV 2019
-2. Wang et al., "Frustratingly Simple Few-Shot Object Detection", ICML 2020  
-3. Li et al., "Overcoming Classifier Imbalance for Long-Tail Object Detection", CVPR 2020
-4. Zhou et al., "BAGS: Balancing Classifier for Long-Tailed Object Detection", CVPR 2020
-5. Akyon et al., "SAHI: Slicing Aided Hyper Inference", 2022
+```bash
+python detector/scripts/infer_single.py \
+  --image image.png \
+  --config detector/configs/cascade_merged_25cls_v3_ce_v5_bifpn_v5_fp16_finaltrain_abl_a0_crt_config.py \
+  --ckpt /models/a0_crt_best.pth
+```
 
-## 作者
+For large remote-sensing scenes, `infer_large.py` uses 1152×1152 tiles with
+152-pixel overlap, resizes tiles to 800×800, maps boxes back to global
+coordinates, and applies same-class global NMS.
 
-竞赛团队: XH-202625项目组
-更新日期: 2026-06-26
+## Repository layout
+
+```text
+detector/configs/       MMDetection config chain
+detector/scripts/       train, evaluate and inference entry points
+detector/mmdet_custom/  InternImage, BiFPN, cRT and sampling components
+detector/ops_dcnv3/     source for the custom CUDA operator
+detector/docs/          metric provenance and reproducibility notes
+```
+
+## License and attribution
+
+The repository contains adapted InternImage and DCNv3 components. Preserve the
+upstream licenses and attribution notices when redistributing. Third-party
+datasets and pretrained weights remain subject to their own licenses.
