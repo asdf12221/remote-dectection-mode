@@ -1,10 +1,10 @@
 # Training outputs and local environments
-detector/work_dirs/
-detector/eval_results*.json
-detector/infer_out/
-detector/weights/*.pth
-detector/ops_dcnv3/*.so
-detector/ops_dcnv3/build/
+work_dirs/
+eval_results*.json
+infer_out/
+weights/*.pth
+ops_dcnv3/*.so
+ops_dcnv3/build/
 runs/
 outputs/
 predictions/

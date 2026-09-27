@@ -79,20 +79,6 @@ At confidence `0.70` and matching IoU `0.50`:
 | Miss rate (MR) | 4.29% | 4.94% | +0.66 pp |
 | False-alarm rate (FAR) | 6.44% | **5.09%** | **−1.35 pp (−21.02%)** |
 
-## Checkpoint notes
-
-The supplied `bifpn_trainval_fp16_finaltrain_crt.pth` belongs to the
-**reference-only trainval → cRT lineage**. Its recorded mAP was 0.863, but it is
-not used as the headline result because trainval includes validation images.
-Matching configs and scripts are kept under:
-
-```text
-detector/configs/*trainval_fp16_finaltrain*
-detector/scripts/train_reference*.sh
-```
-
-Datasets and large `.pth` files are not committed to the repository.
-
 ## Setup
 
 The detector was developed with Python 3.10, PyTorch 2.5, CUDA 12.4,
@@ -100,10 +86,10 @@ MMCV 2.1, MMEngine 0.10.7 and MMDetection 3.3.0. Install versions compatible
 with your CUDA build, then build the custom DCNv3 operator:
 
 ```bash
-pip install -r detector/requirements.txt
-cd detector/ops_dcnv3
+pip install -r requirements.txt
+cd ops_dcnv3
 python setup.py build_ext --inplace
-cd ../..
+cd ..
 ```
 
 Set the project and data paths before using the configs:
@@ -114,49 +100,49 @@ export FPBA_TRAIN_ONLY_ROOT=/data/train_only
 export FPBA_TRAIN_ONLY_ANN=annotations_train_abl.json
 export FPBA_INTERNIMAGE_CKPT=/models/internimage_l_22k_192to384.pth
 export FPBA_SYNTH_CKPT=/models/synth_pretrain_epoch12.pth
-export FPBA_WORK_ROOT=$PWD/detector/work_dirs
+export FPBA_WORK_ROOT=$PWD/work_dirs
 ```
 
 Model weights and datasets are intentionally not included. See
-[`detector/weights/README.md`](detector/weights/README.md).
+[`weights/README.md`](weights/README.md).
 
 ## Training
 
 From the repository root:
 
 ```bash
-bash detector/scripts/train_synthetic.sh
-bash detector/scripts/train_finetune.sh
-bash detector/scripts/train_crt.sh
+bash scripts/train_synthetic.sh
+bash scripts/train_finetune.sh
+bash scripts/train_crt.sh
 ```
 
 Override checkpoints when needed:
 
 ```bash
 S1_CKPT=/models/synth_pretrain_epoch12.pth \
-  bash detector/scripts/train_finetune.sh
+  bash scripts/train_finetune.sh
 
 FT_CKPT=/models/a0_best_epoch35.pth \
-  bash detector/scripts/train_crt.sh
+  bash scripts/train_crt.sh
 ```
 
 ## Evaluation and inference
 
 ```bash
-python detector/scripts/evaluate.py \
-  --config detector/configs/cascade_merged_25cls_v3_ce_v5_bifpn_v5_fp16_finaltrain_abl_a0_crt_config.py \
+python scripts/evaluate.py \
+  --config configs/cascade_merged_25cls_v3_ce_v5_bifpn_v5_fp16_finaltrain_abl_a0_crt_config.py \
   --ckpt /models/a0_crt_best.pth \
   --val-json /data/finaldatav5/annotations_val.json \
   --image-root /data/finaldatav5/images/all \
-  --output detector/eval_results.json
+  --output eval_results.json
 ```
 
 Single-image inference:
 
 ```bash
-python detector/scripts/infer_single.py \
+python scripts/infer_single.py \
   --image image.png \
-  --config detector/configs/cascade_merged_25cls_v3_ce_v5_bifpn_v5_fp16_finaltrain_abl_a0_crt_config.py \
+  --config configs/cascade_merged_25cls_v3_ce_v5_bifpn_v5_fp16_finaltrain_abl_a0_crt_config.py \
   --ckpt /models/a0_crt_best.pth
 ```
 
@@ -167,11 +153,11 @@ coordinates, and applies same-class global NMS.
 ## Repository layout
 
 ```text
-detector/configs/       MMDetection config chain
-detector/scripts/       clean training, evaluation, and inference entry points
-detector/mmdet_custom/  InternImage, BiFPN, cRT and sampling components
-detector/ops_dcnv3/     source for the custom CUDA operator
-detector/weights/       checkpoint download and placement instructions
+configs/                MMDetection config chain
+scripts/                clean training, evaluation, and inference entry points
+mmdet_custom/           InternImage, BiFPN, cRT and sampling components
+ops_dcnv3/              source for the custom CUDA operator
+weights/                checkpoint download and placement instructions
 assets/                 public architecture and training-strategy figures
 ```
 
