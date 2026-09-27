@@ -74,37 +74,10 @@ At confidence `0.70` and matching IoU `0.50`:
 
 ### cRT impact
 
-The two checkpoints were evaluated with the same validation set, matching rule,
-and score threshold. Lower is better for MR/FAR; higher is better for precision,
-recall, and F1.
-
 | Metric @ score 0.70 | pre-cRT | cRT | Change |
 | --- | ---: | ---: | ---: |
 | Miss rate (MR) | 4.29% | 4.94% | +0.66 pp |
 | False-alarm rate (FAR) | 6.44% | **5.09%** | **−1.35 pp (−21.02%)** |
-In short, cRT trades a small increase in misses for a larger reduction in
-false alarms, improving precision and F1 at this operating point. The complete
-counts and source result files are documented in
-[`detector/docs/crt_impact.md`](detector/docs/crt_impact.md).
-
-See [`detector/docs/metrics.md`](detector/docs/metrics.md) for definitions and
-[`detector/docs/train_only_val_metrics.md`](detector/docs/train_only_val_metrics.md)
-for split and checkpoint provenance.
-
-Selected component studies are summarized in
-[`detector/docs/ablations.md`](detector/docs/ablations.md). A3 is the strongest
-near-baseline alternative, while C1 is the operating-point choice when reducing
-false alarms is more important than maximizing recall.
-
-<details>
-<summary>How to interpret these numbers</summary>
-
-MR/FAR are detection-level rates using same-class greedy matching. The
-validation split is used for periodic evaluation and best-checkpoint selection,
-so this is a validation-set report rather than a sealed test-set estimate. The
-trainval checkpoint score is kept as lineage metadata only.
-
-</details>
 
 ## Checkpoint notes
 
@@ -118,9 +91,7 @@ detector/configs/*trainval_fp16_finaltrain*
 detector/scripts/train_reference*.sh
 ```
 
-See [`detector/docs/checkpoint_lineage.md`](detector/docs/checkpoint_lineage.md)
-for the complete graph. We do not commit datasets or large `.pth` files; see
-[`detector/weights/README.md`](detector/weights/README.md).
+Datasets and large `.pth` files are not committed to the repository.
 
 ## Setup
 
@@ -205,18 +176,6 @@ detector/weights/       checkpoint download and placement instructions
 assets/                 public architecture and training-strategy figures
 CITATION.cff            citation metadata for this repository
 ```
-
-## Docs
-
-- [Metrics and MR/FAR definitions](detector/docs/metrics.md)
-- [cRT impact report](detector/docs/crt_impact.md)
-- [Selected ablations](detector/docs/ablations.md)
-- [Configuration map](detector/configs/README.md)
-- [Train-only validation protocol](detector/docs/train_only_val_metrics.md)
-- [Checkpoint lineage](detector/docs/checkpoint_lineage.md)
-- [Reproducibility checklist](detector/docs/reproducibility.md)
-- [References and software versions](detector/docs/references.md)
-- [Citation metadata](CITATION.cff)
 
 ## License and attribution
 
