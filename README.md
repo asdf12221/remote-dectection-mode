@@ -46,6 +46,12 @@ project that is easy to reproduce and extend.
 The detector has 25 classes: four ship classes, twenty aircraft classes, and
 FSC (launch vehicle).
 
+Synthetic pretraining uses the companion generation project
+[FPBA-Syn](https://github.com/asdf12221/FPBA-Syn). This repository starts from
+the exported synthetic images/annotations or the resulting pretraining
+checkpoint; the generation code is intentionally kept in that separate
+project.
+
 This repository is intentionally source-only: generated training outputs,
 legacy YOLO/SAHI experiments, and large checkpoints are excluded so the public
 project focuses on the final detector pipeline.
@@ -76,10 +82,6 @@ recall, and F1.
 | --- | ---: | ---: | ---: |
 | Miss rate (MR) | 4.29% | 4.94% | +0.66 pp |
 | False-alarm rate (FAR) | 6.44% | **5.09%** | **−1.35 pp (−21.02%)** |
-| Precision | 93.56% | **94.91%** | **+1.35 pp** |
-| Recall | **95.71%** | 95.06% | −0.66 pp |
-| F1 | 94.62% | **94.98%** | **+0.36 pp** |
-
 In short, cRT trades a small increase in misses for a larger reduction in
 false alarms, improving precision and F1 at this operating point. The complete
 counts and source result files are documented in
@@ -113,7 +115,7 @@ Matching configs and scripts are kept under:
 
 ```text
 detector/configs/*trainval_fp16_finaltrain*
-detector/scripts/train_trainval_fp16_finaltrain*.sh
+detector/scripts/train_reference*.sh
 ```
 
 See [`detector/docs/checkpoint_lineage.md`](detector/docs/checkpoint_lineage.md)
@@ -152,19 +154,19 @@ Model weights and datasets are intentionally not included. See
 From the repository root:
 
 ```bash
-bash detector/scripts/train_1_synth_pretrain.sh
-bash detector/scripts/train_train_only_finaltrain.sh
-bash detector/scripts/train_train_only_crt.sh
+bash detector/scripts/train_synthetic.sh
+bash detector/scripts/train_finetune.sh
+bash detector/scripts/train_crt.sh
 ```
 
 Override checkpoints when needed:
 
 ```bash
 S1_CKPT=/models/synth_pretrain_epoch12.pth \
-  bash detector/scripts/train_train_only_finaltrain.sh
+  bash detector/scripts/train_finetune.sh
 
 FT_CKPT=/models/a0_best_epoch35.pth \
-  bash detector/scripts/train_train_only_crt.sh
+  bash detector/scripts/train_crt.sh
 ```
 
 ## Evaluation and inference
@@ -195,7 +197,7 @@ coordinates, and applies same-class global NMS.
 
 ```text
 detector/configs/       MMDetection config chain
-detector/scripts/       train, evaluate and inference entry points
+detector/scripts/       clean training, evaluation, and inference entry points
 detector/mmdet_custom/  InternImage, BiFPN, cRT and sampling components
 detector/ops_dcnv3/     source for the custom CUDA operator
 detector/docs/          metric provenance and reproducibility notes
@@ -209,6 +211,7 @@ CITATION.cff            citation metadata for this repository
 - [Metrics and MR/FAR definitions](detector/docs/metrics.md)
 - [cRT impact report](detector/docs/crt_impact.md)
 - [Selected ablations](detector/docs/ablations.md)
+- [Configuration map](detector/configs/README.md)
 - [Train-only validation protocol](detector/docs/train_only_val_metrics.md)
 - [Checkpoint lineage](detector/docs/checkpoint_lineage.md)
 - [Reproducibility checklist](detector/docs/reproducibility.md)

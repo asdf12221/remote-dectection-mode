@@ -17,7 +17,9 @@ compile the extension before launching MMDetection.
 ## Data and checkpoints
 
 Set the data and checkpoint environment variables described in the root README.
-The public chain requires synthetic pretraining initialization, the train-only
+Synthetic pretraining data and its generation pipeline come from the companion
+[FPBA-Syn project](https://github.com/asdf12221/FPBA-Syn). The public chain
+requires that synthetic pretraining initialization, the train-only
 A0 annotations, and the validation COCO annotations. Dataset files and model
 weights are deliberately not redistributed in this repository.
 
@@ -25,9 +27,9 @@ weights are deliberately not redistributed in this repository.
 
 Run the stages in order:
 
-1. `detector/scripts/train_1_synth_pretrain.sh`
-2. `detector/scripts/train_train_only_finaltrain.sh`
-3. `detector/scripts/train_train_only_crt.sh`
+1. `detector/scripts/train_synthetic.sh`
+2. `detector/scripts/train_finetune.sh`
+3. `detector/scripts/train_crt.sh`
 
 The finaltrain stage uses FSC-only repeat-factor sampling with threshold 0.08.
 The cRT stage uses threshold 0.15 and freezes all modules except the three
