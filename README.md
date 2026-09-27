@@ -49,10 +49,9 @@ Synthetic pretraining data comes from the companion generation project
 the detector code, configs, custom operators, and entry points; datasets and
 large checkpoints are kept external.
 
-## Competition result
+## Milestones
 
-🏆 In the preliminary round of **Challenge Cup XH-202625**, our project achieved
- a result within the **top 20%** of participating teams.
+- **2026-09-05**：🏆 In the preliminary round of **Challenge Cup XH-202625**, our project achieved a result within the **top 20%** of participating teams.
 
 ## Pipeline
 
