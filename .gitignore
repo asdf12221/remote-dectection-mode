@@ -5,9 +5,11 @@ detector/infer_out/
 detector/weights/*.pth
 detector/ops_dcnv3/*.so
 detector/ops_dcnv3/build/
+runs/
+outputs/
+predictions/
+*.log
 __pycache__/
 *.pyc
-*.log
 
-# Keep the existing YOLO checkpoints tracked by this repository; new large
-# checkpoints should use Git LFS or an external model registry.
+# Large model checkpoints should use Git LFS or an external model registry.

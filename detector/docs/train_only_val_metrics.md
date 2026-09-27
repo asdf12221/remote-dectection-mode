@@ -26,6 +26,9 @@ This is the metric provenance used on the repository homepage.
 The cRT model's deployment operating point at score threshold 0.70 was recorded
 as MR 4.94% and FAR 5.09% overall.
 
+Definitions for precision, recall, miss rate (MR), false-alarm rate (FAR), and
+the IoU/confidence operating point are in [`metrics.md`](metrics.md).
+
 ## Checkpoint provenance
 
 The cRT checkpoint used for these metrics was the best checkpoint from the
