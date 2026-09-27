@@ -41,6 +41,24 @@ The operating-point F1 score is computed as:
 F1 = 2 * precision * recall / (precision + recall) = 0.949849 ≈ 94.98%
 ```
 
+## cRT comparison at the same operating point
+
+The pre-cRT A0 checkpoint and the cRT C1 checkpoint were evaluated on the same
+7,022-box validation split using the same-class greedy matcher, IoU 0.50, and
+confidence threshold 0.70:
+
+| Metric | pre-cRT A0 | cRT C1 | Change (cRT − pre-cRT) |
+| --- | ---: | ---: | ---: |
+| MR | 4.29% | 4.94% | +0.66 pp |
+| FAR | 6.44% | **5.09%** | **−1.35 pp (−21.02%)** |
+| Precision | 93.56% | **94.91%** | +1.35 pp |
+| Recall | **95.71%** | 95.06% | −0.66 pp |
+| F1 | 94.62% | **94.98%** | +0.36 pp |
+
+This is a trade-off, not a universal improvement: cRT reduces false alarms and
+raises precision/F1, while recall decreases slightly at the fixed threshold.
+See [`crt_impact.md`](crt_impact.md) for TP/FP/FN counts and AP deltas.
+
 ## Split and provenance
 
 - Training: A0 train-only split (`annotations_train_abl.json`).

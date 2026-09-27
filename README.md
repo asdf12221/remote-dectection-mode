@@ -68,23 +68,31 @@ At confidence `0.70` and matching IoU `0.50`:
 
 ### cRT impact
 
-| Metric | Before cRT | After cRT | Change |
-| --- | ---: | ---: | ---: |
-| mAP | 0.759 | 0.758 | -0.001 |
-| AP50 | 0.946 | 0.944 | -0.002 |
-| AP75 | 0.908 | 0.909 | +0.001 |
-| Miss rate @ 0.70 | not recorded | **4.94%** | not reported |
-| False-alarm rate @ 0.70 | not recorded | **5.09%** | not reported |
+The two checkpoints were evaluated with the same validation set, matching rule,
+and score threshold. Lower is better for MR/FAR; higher is better for precision,
+recall, and F1.
 
-The current experiment log contains MR/FAR for the cRT checkpoint, but not for
-the pre-cRT checkpoint under the identical evaluator and threshold. We therefore
-do not invent an MR/FAR improvement value. To fill the last column, run
-`detector/scripts/evaluate.py` on both checkpoints with the same validation
-annotations and compare the `tau0.7` fields.
+| Metric @ score 0.70 | pre-cRT | cRT | Change |
+| --- | ---: | ---: | ---: |
+| Miss rate (MR) | 4.29% | 4.94% | +0.66 pp |
+| False-alarm rate (FAR) | 6.44% | **5.09%** | **−1.35 pp (−21.02%)** |
+| Precision | 93.56% | **94.91%** | **+1.35 pp** |
+| Recall | **95.71%** | 95.06% | −0.66 pp |
+| F1 | 94.62% | **94.98%** | **+0.36 pp** |
+
+In short, cRT trades a small increase in misses for a larger reduction in
+false alarms, improving precision and F1 at this operating point. The complete
+counts and source result files are documented in
+[`detector/docs/crt_impact.md`](detector/docs/crt_impact.md).
 
 See [`detector/docs/metrics.md`](detector/docs/metrics.md) for definitions and
 [`detector/docs/train_only_val_metrics.md`](detector/docs/train_only_val_metrics.md)
 for split and checkpoint provenance.
+
+Selected component studies are summarized in
+[`detector/docs/ablations.md`](detector/docs/ablations.md). A3 is the strongest
+near-baseline alternative, while C1 is the operating-point choice when reducing
+false alarms is more important than maximizing recall.
 
 <details>
 <summary>How to interpret these numbers</summary>
@@ -199,6 +207,8 @@ CITATION.cff            citation metadata for this repository
 ## Docs
 
 - [Metrics and MR/FAR definitions](detector/docs/metrics.md)
+- [cRT impact report](detector/docs/crt_impact.md)
+- [Selected ablations](detector/docs/ablations.md)
 - [Train-only validation protocol](detector/docs/train_only_val_metrics.md)
 - [Checkpoint lineage](detector/docs/checkpoint_lineage.md)
 - [Reproducibility checklist](detector/docs/reproducibility.md)
