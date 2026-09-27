@@ -51,7 +51,7 @@ large checkpoints are kept external.
 
 ## Milestones
 
-- **2026-09-05**：🏆 In the preliminary round of **Challenge Cup XH-202625**, our project achieved a result within the **top 20%** of participating teams.
+- **2026-09-05**：🎉 Congratulations！项目在 **挑战杯“揭榜挂帅”专项赛 XH-202625** 初赛阶段取得 **前 20%** 的成绩 🚀
 
 ## Pipeline
 
