@@ -16,9 +16,14 @@ project that is easy to reproduce and extend.
 
 ## At a glance
 
+<p align="center"><b>Model architecture</b></p>
 <p align="center">
-  <img src="assets/architecture.png" alt="Model architecture" width="49%">
-  <img src="assets/training_pipeline.png" alt="Training pipeline" width="49%">
+  <img src="assets/architecture.png" alt="Model architecture" width="100%">
+</p>
+
+<p align="center"><b>Training pipeline</b></p>
+<p align="center">
+  <img src="assets/training_pipeline.png" alt="Training pipeline" width="92%">
 </p>
 
 - **Multi-scale features:** InternImage-L backbone + BiFPN neck.
@@ -50,16 +55,32 @@ project focuses on the final detector pipeline.
 The numbers below use the train-only A0 split and the `finaldatav5` validation
 split. Validation images are not used for gradient updates.
 
-| Model | mAP | AP50 | AP75 | APs | APm | APl |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| InternImage-L + BiFPN + Cascade R-CNN | 0.759 | 0.946 | 0.908 | 0.279 | 0.748 | 0.787 |
-| **+ cRT** | **0.758** | **0.944** | **0.909** | **0.268** | **0.747** | **0.788** |
+| Model | mAP | AP50 | AP75 |
+| --- | ---: | ---: | ---: |
+| InternImage-L + BiFPN + Cascade R-CNN | 0.759 | 0.946 | 0.908 |
+| **+ cRT** | **0.758** | **0.944** | **0.909** |
 
 At confidence `0.70` and matching IoU `0.50`:
 
 | Precision | Recall | F1 | Miss rate | False-alarm rate |
 | ---: | ---: | ---: | ---: | ---: |
 | **94.91%** | **95.06%** | **94.98%** | **4.94%** | **5.09%** |
+
+### cRT impact
+
+| Metric | Before cRT | After cRT | Change |
+| --- | ---: | ---: | ---: |
+| mAP | 0.759 | 0.758 | -0.001 |
+| AP50 | 0.946 | 0.944 | -0.002 |
+| AP75 | 0.908 | 0.909 | +0.001 |
+| Miss rate @ 0.70 | not recorded | **4.94%** | not reported |
+| False-alarm rate @ 0.70 | not recorded | **5.09%** | not reported |
+
+The current experiment log contains MR/FAR for the cRT checkpoint, but not for
+the pre-cRT checkpoint under the identical evaluator and threshold. We therefore
+do not invent an MR/FAR improvement value. To fill the last column, run
+`detector/scripts/evaluate.py` on both checkpoints with the same validation
+annotations and compare the `tau0.7` fields.
 
 See [`detector/docs/metrics.md`](detector/docs/metrics.md) for definitions and
 [`detector/docs/train_only_val_metrics.md`](detector/docs/train_only_val_metrics.md)
