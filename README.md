@@ -171,10 +171,8 @@ detector/configs/       MMDetection config chain
 detector/scripts/       clean training, evaluation, and inference entry points
 detector/mmdet_custom/  InternImage, BiFPN, cRT and sampling components
 detector/ops_dcnv3/     source for the custom CUDA operator
-detector/docs/          metric provenance and reproducibility notes
 detector/weights/       checkpoint download and placement instructions
 assets/                 public architecture and training-strategy figures
-CITATION.cff            citation metadata for this repository
 ```
 
 ## License and attribution
